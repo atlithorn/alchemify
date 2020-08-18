@@ -5,102 +5,94 @@ It parses http requests as defined by PostgREST (I think PostgREST is amazing bu
 The parsed requests generate sql statements via SQLAlchemy. 
 It's early days but I have the basic stuff working.
 
-"""
-% sqlite3 fawlty.db
-CREATE TABLE users (
-	id INTEGER NOT NULL, 
-	name VARCHAR, 
-	fullname VARCHAR, 
-	PRIMARY KEY (id)
-);
-CREATE TABLE addresses (
-	id INTEGER NOT NULL, 
-	user_id INTEGER, 
-	email_address VARCHAR NOT NULL, 
-	PRIMARY KEY (id), 
-	FOREIGN KEY(user_id) REFERENCES users (id)
-);
-"""
+    % sqlite3 fawlty.db
+    CREATE TABLE users (
+        id INTEGER NOT NULL, 
+        name VARCHAR, 
+        fullname VARCHAR, 
+        PRIMARY KEY (id)
+    );
+    CREATE TABLE addresses (
+        id INTEGER NOT NULL, 
+        user_id INTEGER, 
+        email_address VARCHAR NOT NULL, 
+        PRIMARY KEY (id), 
+        FOREIGN KEY(user_id) REFERENCES users (id)
+    );
 
-Flask example
-"""
-from flask import Flask
+###Flask example
+    from flask import Flask
 
-from sqlalchemy import create_engine
+    from sqlalchemy import create_engine
 
-from alchemify import Alchemify
-from alchemify.flask import AlchemifiedView
+    from alchemify import Alchemify
+    from alchemify.flask import AlchemifiedView
 
-engine = create_engine('sqlite:///fawlty.db', echo=True)
+    engine = create_engine('sqlite:///fawlty.db', echo=True)
 
-app = Flask(__name__)
-app.alchemify = Alchemify(engine)
+    app = Flask(__name__)
+    app.alchemify = Alchemify(engine)
 
-app.add_url_rule('/api/<table>', view_func=AlchemifiedView.as_view('api'))
-"""
+    app.add_url_rule('/api/<table>', view_func=AlchemifiedView.as_view('api'))
 
 
-"""
-% curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/users" -d '{"name":"Basil", "fullname": "Basil Fawlty"}'
-% curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/users" -d '{"name":"Sybil", "fullname": "Sybil Fawlty"}'
+    % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/users" -d '{"name":"Basil", "fullname": "Basil Fawlty"}'
+    % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/users" -d '{"name":"Sybil", "fullname": "Sybil Fawlty"}'
 
-% curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/addresses" -d '[{"user_id":1, "email_address": "basil@fawlty.co.uk"}, {"user_id":2, "email_address": "reception@fawlty.co.uk"}]'
+    % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/addresses" -d '[{"user_id":1, "email_address": "basil@fawlty.co.uk"}, {"user_id":2, "email_address": "reception@fawlty.co.uk"}]'
 
-% curl  "http://localhost:5000/api/users?select=id,name,fullname,addresses(email_address)&id=eq.addresses.user_id"
-[
-    {
-        "id": 1, 
-        "name": "Basil", 
-        "fullname": "Basil Fawlty", 
-        "addresses": {
-            "email_address": "basil@fawlty.co.uk"
+    % curl  "http://localhost:5000/api/users?select=id,name,fullname,addresses(email_address)&id=eq.addresses.user_id"
+    [
+        {
+            "id": 1, 
+            "name": "Basil", 
+            "fullname": "Basil Fawlty", 
+            "addresses": {
+                "email_address": "basil@fawlty.co.uk"
+            }
+        }, 
+        {
+            "id": 2, 
+            "name": "Sybil", 
+            "fullname": "Sybil Fawlty", 
+            "addresses": {
+                "email_address": "reception@fawlty.co.uk"
+            }
         }
-    }, 
-    {
-        "id": 2, 
-        "name": "Sybil", 
-        "fullname": "Sybil Fawlty", 
-        "addresses": {
-            "email_address": "reception@fawlty.co.uk"
-        }
-    }
-]
+    ]
 
-% curl -X PUT -H "Content-Type: application/json" "http://localhost:5000/api/addresses?user_id=eq.2" -d '{"email_address":"sybil@fawlty.co.uk"}'
+    % curl -X PUT -H "Content-Type: application/json" "http://localhost:5000/api/addresses?user_id=eq.2" -d '{"email_address":"sybil@fawlty.co.uk"}'
 
-% curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/users" -d '{"name":"Manuel", "fullname": "Manuel"}'
+    % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/users" -d '{"name":"Manuel", "fullname": "Manuel"}'
 
-% curl -X DELETE 'http://localhost:5000/api/users?name=eq."Manuel"' 
+    % curl -X DELETE 'http://localhost:5000/api/users?name=eq."Manuel"' 
 
-"""
 
 Nice, right? But how about grouping?
 Just like PostgREST, let the database handle this, try to keep the interface simple. 
-"""
-% sqlite3 fawlty.db
-CREATE VIEW user_addresses AS 
-SELECT users.*, group_concat(addresses.email_address) AS emails FROM users JOIN addresses ON users.id = addresses.user_id GROUP BY users.id, users.name, users.fullname;
-"""
+
+    % sqlite3 fawlty.db
+    CREATE VIEW user_addresses AS 
+    SELECT users.*, group_concat(addresses.email_address) AS emails FROM users JOIN addresses ON users.id = addresses.user_id GROUP BY users.id, users.name, users.fullname;
 
 Unfortunately sqlite doesn't support array types but you get the idea.
 From there it's just:
-"""
-% curl  "http://localhost:5000/api/user_addresses" 
-[
-    {
-        "id": 1,
-        "name": "Basil",
-        "fullname": "Basil Fawlty",
-        "emails": "basil@fawlty.co.uk"
-    },
-    {
-        "id": 2,
-        "name": "Sybil",
-        "fullname": "Sybil Fawlty",
-        "emails": "sybil@gmail.com,reception@fawlty.co.uk"
-    }
-]
-"""
+
+    % curl  "http://localhost:5000/api/user_addresses" 
+    [
+        {
+            "id": 1,
+            "name": "Basil",
+            "fullname": "Basil Fawlty",
+            "emails": "basil@fawlty.co.uk"
+        },
+        {
+            "id": 2,
+            "name": "Sybil",
+            "fullname": "Sybil Fawlty",
+            "emails": "sybil@gmail.com,reception@fawlty.co.uk"
+        }
+    ]
 
 
 
