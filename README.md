@@ -20,7 +20,8 @@ It's early days but I have the basic stuff working.
         FOREIGN KEY(user_id) REFERENCES users (id)
     );
 
-###Flask example
+### Flask example
+
     from flask import Flask
 
     from sqlalchemy import create_engine
