@@ -4,6 +4,8 @@ Alchemify is a little tool that I have been playing around with that is written 
 It parses http requests as defined by [PostgREST](https://postgrest.org) (I think PostgREST is amazing but I'm too lazy and/or stupid to learn Haskell). 
 The parsed requests generate sql statements via [SQLAlchemy](https://www.sqlalchemy.org). 
 It's early days but I have the basic stuff working.
+### Flask example
+Create a database.
 
     % sqlite3 fawlty.db
     CREATE TABLE users (
@@ -20,7 +22,7 @@ It's early days but I have the basic stuff working.
         FOREIGN KEY(user_id) REFERENCES users (id)
     );
 
-### Flask example
+Hello Alchemify.
 
     from flask import Flask
 
@@ -48,7 +50,7 @@ Try it
 
     % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/addresses" -d '[{"user_id":1, "email_address": "basil@fawlty.co.uk"}, {"user_id":2, "email_address": "reception@fawlty.co.uk"}]'
 
-    % curl  "http://localhost:5000/api/users?select=id,name,fullname,addresses(email_address)&id=eq.addresses.user_id"
+    % curl  "http://localhost:5000/api/users?select=id,name,fullname,addresses(email_address)&id=eq.addresses.user_id&order=name"
     [
         {
             "id": 1, 
@@ -67,15 +69,31 @@ Try it
             }
         }
     ]
-
+        
     % curl -X PUT -H "Content-Type: application/json" "http://localhost:5000/api/addresses?user_id=eq.2" -d '{"email_address":"sybil@fawlty.co.uk"}'
+    
+    % curl "http://localhost:5000/api/addresses?select=email_address,user:users(name)&id=lt.5&user_id=eq.users.id&order=users.fullname.desc"
+    [
+        {
+            "email_address": "sybil@fawlty.co.uk",
+            "user": {
+                "name": "Sybil"
+            }
+        },
+        {
+            "email_address": "basil@fawlty.co.uk",
+            "user": {
+                "name": "Basil"
+            }
+        }
+    ]
 
     % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/users" -d '{"name":"Manuel", "fullname": "Manuel"}'
 
     % curl -X DELETE 'http://localhost:5000/api/users?name=eq."Manuel"' 
 
 
-Nice, right? But how about grouping?
+Nice, right? But what about grouping?
 
 Just like PostgREST, let the database handle this, try to keep the interface simple. 
 
@@ -88,7 +106,9 @@ Just like PostgREST, let the database handle this, try to keep the interface sim
 Unfortunately sqlite doesn't support array types but you get the idea.
 From there it's just:
 
-    % curl  "http://localhost:5000/api/user_addresses" 
+    % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/addresses" -d '{"user_id":2, "email_address": "reception@fawlty.co.uk"}'
+    
+    % curl  "http://localhost:5000/api/user_addresses?limit=2" 
     [
         {
             "id": 1,
@@ -100,7 +120,7 @@ From there it's just:
             "id": 2,
             "name": "Sybil",
             "fullname": "Sybil Fawlty",
-            "emails": "sybil@gmail.com,reception@fawlty.co.uk"
+            "emails": "sybil@fawlty.co.uk,reception@fawlty.co.uk"
         }
     ]
 
