@@ -1,8 +1,8 @@
 # Alchemify
 
 Alchemify is a little tool that I have been playing around with that is written on top of SQLAlchemy. 
-It parses http requests as defined by PostgREST (I think PostgREST is amazing but I'm too lazy and/or stupid to learn Haskell). 
-The parsed requests generate sql statements via SQLAlchemy. 
+It parses http requests as defined by [PostgREST](https://postgrest.org) (I think PostgREST is amazing but I'm too lazy and/or stupid to learn Haskell). 
+The parsed requests generate sql statements via [SQLAlchemy](https://www.sqlalchemy.org). 
 It's early days but I have the basic stuff working.
 
     % sqlite3 fawlty.db
@@ -70,11 +70,14 @@ It's early days but I have the basic stuff working.
 
 
 Nice, right? But how about grouping?
+
 Just like PostgREST, let the database handle this, try to keep the interface simple. 
 
     % sqlite3 fawlty.db
     CREATE VIEW user_addresses AS 
-    SELECT users.*, group_concat(addresses.email_address) AS emails FROM users JOIN addresses ON users.id = addresses.user_id GROUP BY users.id, users.name, users.fullname;
+       SELECT users.*, group_concat(addresses.email_address) AS emails 
+       FROM users JOIN addresses ON users.id = addresses.user_id 
+       GROUP BY users.id, users.name, users.fullname;
 
 Unfortunately sqlite doesn't support array types but you get the idea.
 From there it's just:
