@@ -36,7 +36,11 @@ It's early days but I have the basic stuff working.
 
     app.add_url_rule('/api/<table>', view_func=AlchemifiedView.as_view('api'))
 
+Run it
+    % export FLASK_APP=hello-flask.py 
+    % flask run
 
+Try it
     % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/users" -d '{"name":"Basil", "fullname": "Basil Fawlty"}'
     % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/users" -d '{"name":"Sybil", "fullname": "Sybil Fawlty"}'
 
