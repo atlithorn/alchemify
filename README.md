@@ -92,8 +92,10 @@ Try it.
     % curl -X DELETE 'http://localhost:5000/api/users?name=eq."Manuel"' 
 
 
-Nice, right? But what about grouping?  
-Just like PostgREST, let the database handle this, try to keep the interface simple. 
+Nice, right? But what about grouping or deeper joins or subqueries, etc, etc?  
+There are a lot of features missing at this point, we'll get there hopefully.  
+But the question is also how much do you just leave to the database in order to try and keep the http interface simple?  
+Similar to what PostgREST recommends for grouping, just create a view:
 
     % sqlite3 fawlty.db
     CREATE VIEW user_addresses AS 
@@ -101,7 +103,7 @@ Just like PostgREST, let the database handle this, try to keep the interface sim
        FROM users JOIN addresses ON users.id = addresses.user_id 
        GROUP BY users.id, users.name, users.fullname;
 
-Unfortunately sqlite doesn't support array types but you get the idea.  
+(Unfortunately sqlite doesn't support array types but you get the idea...)  
 From there it's just:
 
     % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/addresses" -d '{"user_id":2, "email_address": "reception@fawlty.co.uk"}'
