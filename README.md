@@ -1,8 +1,7 @@
 # Alchemify
 
 Alchemify is a little tool that I have been playing around with that is written on top of SQLAlchemy.  
-It parses http requests as defined by [PostgREST](https://postgrest.org) (I think PostgREST is amazing but I'm too lazy and/or stupid to learn Haskell).  
-The parsed requests generate sql statements via [SQLAlchemy](https://www.sqlalchemy.org).  
+It parses http requests as defined by [PostgREST](https://postgrest.org) (I think PostgREST is amazing but I'm too lazy and/or stupid to learn Haskell). The parsed requests then generate sql statements via [SQLAlchemy](https://www.sqlalchemy.org).  
 It's early days but I have the basic stuff working.  
 ### Flask example
 Create a database.
