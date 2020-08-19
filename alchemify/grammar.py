@@ -105,16 +105,13 @@ class BaseTransformer(Transformer):
     def columns(self, args):
         return self.columns.__name__, [arg.value for arg in args]
 
-    def limit(self, args):
-        print(f"limit->{args}")
+    def limit(self, args):        
         return self.limit.__name__, args[0].value
 
     def offset(self, args):
-        print(f"limit->{args}")
         return self.offset.__name__, args[0].value
 
-    def order(self, args):
-        print(f"limit->{args}")
+    def order(self, args):        
         orderings = list()
         for arg in args:
             ref = arg.children[0]
@@ -227,8 +224,7 @@ class SelectTransformer(BaseTransformer):
         self.table = table
         self.metadata = metadata
 
-    def start(self, args):
-        print(f"start->{args}")
+    def start(self, args):    
         columns = [self.table]
         whereclauses = []
         order = None
@@ -249,13 +245,10 @@ class SelectTransformer(BaseTransformer):
         if whereclauses:
             stmt = stmt.where(and_(*whereclauses))
         if limit is not None:
-            print(f"...adding limit:{limit}")
             stmt = stmt.limit(limit)
         if offset is not None:
-            print(f"...adding offset:{limit}")
             stmt = stmt.offset(offset)
         if order is not None:
-            print(f"...adding order:{limit}")
             stmt = stmt.order_by(*order)
 
         return stmt
@@ -394,12 +387,11 @@ class TemplateTransformer(Transformer):
         return output_list
     
     def start(self, args):
-        print(f"TemplateTransformer.start->{args}")
-        
+        # only support output from select        
         for arg in args:
             if type(arg) == tuple and arg[0] == TemplateTransformer.select.__name__:
                  return arg[1]
-        # no select means we're returning all items from table
+        # if no select output that means we're returning all items from table
         return self._expand_table(self.table)
 
     def select(self, args):
