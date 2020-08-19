@@ -150,5 +150,5 @@ The idea is not to tell you how to write your application but to get you running
 * Add FastAPI support (other frameworks?)
 * Documentation
 * Support OpenAPI
-* Add more operators
+* Add more operators and features.
 
