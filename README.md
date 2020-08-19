@@ -22,7 +22,7 @@ Create a database.
         FOREIGN KEY(user_id) REFERENCES users (id)
     );
 
-Hello Alchemify.
+Hello Alchemify. (Example from hello-flask.py)
 
     from flask import Flask
 
