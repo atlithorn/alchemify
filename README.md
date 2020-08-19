@@ -108,7 +108,7 @@ From there it's just:
 
     % curl -X POST -H "Content-Type: application/json" "http://localhost:5000/api/addresses" -d '{"user_id":2, "email_address": "reception@fawlty.co.uk"}'
     
-    % curl  "http://localhost:5000/api/user_addresses?limit=2" 
+    % curl  "http://localhost:5000/api/user_addresses?select=*&limit=2" 
     [
         {
             "id": 1,
