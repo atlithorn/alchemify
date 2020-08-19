@@ -1,15 +1,16 @@
 import json
 from urllib.parse import unquote
 
-from flask import current_app, request
+from flask import current_app, request, make_response
 from flask.views import MethodView
 
 from alchemify import Alchemify
 
 def dumps(input):
     # quick and dirty support for whatever objects that serialize nicely to str
-    return json.dumps(input, indent=4, default=str)
-
+    response = make_response(json.dumps(input, indent=4, default=str))
+    response.headers["Content-Type"] = "application/json; charset=utf-8"
+    return response
 
 class AlchemifiedView(MethodView):
 
